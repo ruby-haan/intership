@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Internship Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-icon">✿</span><div><strong>internship</strong><small>TRACKER</small></div></div>
+      <nav>
+        <button class="nav-link active" data-view="dashboard"><span>⌂</span> Dashboard</button>
+        <button class="nav-link" data-view="applications"><span>▤</span> Applications</button>
+        <button class="nav-link" data-view="cv"><span>▧</span> My CV</button>
+        <button class="nav-link" data-view="reminders"><span>◷</span> Reminders <b id="reminderBadge" class="nav-badge">0</b></button>
+      </nav>
+      <div class="sidebar-note"><span>☁</span><p>One step closer to your dream internship.</p></div>
+      <div class="sidebar-footer">Your next chapter starts here ♡</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><p class="eyebrow">YOUR INTERNSHIP JOURNEY</p><h1 id="pageTitle">Dashboard</h1></div>
+        <button class="primary-btn" id="addTopButton">＋ Add application</button>
+      </header>
+
+      <section id="dashboardView" class="view">
+        <div class="welcome-card">
+          <div><p class="eyebrow">A LITTLE PROGRESS EVERY DAY</p><h2>Keep your future<br>in motion <span>✦</span></h2><p>All your internship applications, in one happy place.</p></div>
+          <div class="welcome-art" aria-hidden="true"><span class="sun">✺</span><span class="paper">✉</span><span class="sparkle">✧</span></div>
+        </div>
+        <div class="stats-grid">
+          <article class="stat-card pink"><span class="stat-icon">▤</span><p>Total applications</p><strong id="totalCount">0</strong></article>
+          <article class="stat-card blue"><span class="stat-icon">◷</span><p>Waiting for reply</p><strong id="waitingCount">0</strong></article>
+          <article class="stat-card purple"><span class="stat-icon">♡</span><p>Accepted</p><strong id="acceptedCount">0</strong></article>
+          <article class="stat-card green"><span class="stat-icon">✉</span><p>Replies received</p><strong id="repliedCount">0</strong></article>
+        </div>
+        <div class="section-heading"><div><p class="eyebrow">STAY ON TOP OF THINGS</p><h2>Upcoming reminders</h2></div><button class="text-btn" data-goto="reminders">See all →</button></div>
+        <div id="dashboardReminders" class="reminder-list"></div>
+        <div class="section-heading recent-heading"><div><p class="eyebrow">YOUR LATEST ACTIVITY</p><h2>Recent applications</h2></div><button class="text-btn" data-goto="applications">View all →</button></div>
+        <div id="recentApplications" class="application-list"></div>
+      </section>
+
+      <section id="applicationsView" class="view hidden">
+        <div class="toolbar"><div class="tabs" id="statusTabs">
+          <button class="tab active" data-filter="All">All</button><button class="tab" data-filter="Waiting">Waiting</button><button class="tab" data-filter="Replied">Replied</button><button class="tab" data-filter="Accepted">Accepted</button><button class="tab" data-filter="Rejected">Rejected</button>
+        </div><input id="searchInput" class="search" type="search" placeholder="⌕  Search companies..."></div>
+        <div id="allApplications" class="application-list"></div>
+      </section>
+
+      <section id="cvView" class="view hidden">
+        <div class="info-banner cv-banner"><span>✧</span><div><strong>Your CV, all in one place</strong><p>Paste your existing CV or write it here. Your changes are saved automatically in this browser.</p></div></div>
+        <div class="cv-toolbar"><div><p class="eyebrow">YOUR PERSONAL DOCUMENT</p><h2>CV editor</h2></div><div class="cv-actions"><label class="upload-btn" for="cvUpload">↑ Import .txt file</label><input id="cvUpload" type="file" accept=".txt,.md,text/plain,text/markdown" hidden><button class="secondary-btn" id="downloadCv">↓ Download CV</button><button class="primary-btn" id="printCv">Print / Save PDF</button></div></div>
+        <div class="cv-photo-card">
+          <div class="cv-photo-heading">
+            <div><p class="eyebrow">HAVE A CV ALREADY?</p><h3>Upload a photo of your CV</h3><p>Upload a clear photo or scan (JPG, PNG or WEBP) to keep it here in your app.</p></div>
+            <label class="upload-btn" for="cvPhotoUpload">↑ Upload CV photo</label>
+            <input id="cvPhotoUpload" type="file" accept="image/*" hidden>
+          </div>
+          <div id="cvPhotoPreview" class="cv-photo-preview">
+            <div class="cv-photo-empty"><span>▧</span><strong>No CV photo uploaded yet</strong><small>Your uploaded CV photo will appear here.</small></div>
+          </div>
+          <button type="button" class="text-btn cv-remove-photo hidden" id="removeCvPhoto">Remove photo ×</button>
+        </div>
+        <div class="cv-layout">
+          <div class="cv-editor-card"><label class="cv-label" for="cvText">Your CV content</label><textarea id="cvText" class="cv-text" placeholder="YOUR NAME
+Email · Phone · City
+
+PROFILE
+Write a short introduction about yourself...
+
+EDUCATION
+School, study programme, dates...
+
+WORK EXPERIENCE
+Job or internship, dates, responsibilities...
+
+SKILLS
+Your skills and strengths...
+
+LANGUAGES
+Languages you speak..."></textarea><div class="save-status"><span class="save-dot"></span><span id="cvSaveStatus">Saved automatically</span></div></div>
+          <aside class="cv-tips"><span class="tip-icon">♡</span><h3>CV tips</h3><p><strong>Keep it clear.</strong> Use short sections and bullet points.</p><p><strong>Make it relevant.</strong> Highlight skills that fit the internship.</p><p><strong>Check your details.</strong> Make sure your contact information is correct.</p><p><strong>Photo or scan?</strong> You can store an image of an existing CV above. To change the actual text, use the editor or paste the text into it.</p><p class="privacy-note">Your CV text and photo stay in this browser. They are not sent to companies automatically.</p></aside>
+        </div>
+      </section>
+
+      <section id="remindersView" class="view hidden">
+        <div class="info-banner"><span>♡</span><div><strong>A little nudge at the right time</strong><p>Follow up after 7 days without a company reply, and remember to answer new emails within 3 days.</p></div></div>
+        <div class="section-heading"><div><p class="eyebrow">DON'T LET ANYTHING SLIP</p><h2>Your reminders</h2></div></div>
+        <div id="allReminders" class="reminder-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="applicationDialog">
+    <form id="applicationForm">
+      <div class="modal-heading"><div><p class="eyebrow">GROW YOUR OPPORTUNITIES</p><h2 id="formTitle">Add an application</h2></div><button type="button" class="close-btn" id="closeDialog">×</button></div>
+      <input type="hidden" id="editId">
+      <label>Company name *<input id="company" required maxlength="70" placeholder="e.g. Studio Bloom"></label>
+      <div class="form-row"><label>Date applied *<input id="dateApplied" type="date" required></label><label>Status<select id="status"><option>Waiting</option><option>Replied</option><option>Accepted</option><option>Rejected</option></select></label></div>
+      <label>Contact email<input id="email" type="email" placeholder="name@company.com"></label>
+      <label>Notes<textarea id="notes" rows="3" placeholder="Contact person, interview details, anything to remember..."></textarea></label>
+      <div class="modal-actions"><button type="button" class="secondary-btn" id="cancelDialog">Cancel</button><button type="submit" class="primary-btn">Save application</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="emailDialog">
+    <form id="emailForm">
+      <div class="modal-heading"><div><p class="eyebrow">KEEP YOUR INBOX IN CHECK</p><h2>Log a new email</h2></div><button type="button" class="close-btn" id="closeEmailDialog">×</button></div>
+      <p class="form-help">Add an email you received from a company. The app will remind you to reply within 3 days.</p>
+      <label>Company *<select id="emailCompany" required></select></label>
+      <label>Date received *<input id="emailDate" type="date" required></label>
+      <label>What is it about?<textarea id="emailDetails" rows="2" placeholder="Interview invitation, question, update..."></textarea></label>
+      <div class="modal-actions"><button type="button" class="secondary-btn" id="cancelEmailDialog">Cancel</button><button type="submit" class="primary-btn">Save email</button></div>
+    </form>
+  </dialog>
+  <script src="script.js"></script>
+</body>
+</html>
