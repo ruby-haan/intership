@@ -1,6 +1,9 @@
 const $ = (id) => document.getElementById(id);
 const STORAGE_KEY = "internshipTrackerData";
 const EMAIL_KEY = "internshipTrackerEmails";
+const INTERNSHIP_KEY = "internshipTrackerSavedInternships";
+let savedInternships = JSON.parse(localStorage.getItem(INTERNSHIP_KEY) || "[]");
+let internshipFilter = "All";
 let applications = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 let emails = JSON.parse(localStorage.getItem(EMAIL_KEY) || "[]");
 let activeFilter = "All";
@@ -41,6 +44,51 @@ function appCard(app) {
 function reminderCard(r) {
   return `<article class="reminder-card"><div class="reminder-symbol">${r.type==="follow"?"◷":"✉"}</div><div class="reminder-copy"><strong>${escapeHTML(r.title)}</strong><p>${escapeHTML(r.detail)}</p></div><span class="reminder-date">${escapeHTML(r.date)}</span>${r.type==="email"?`<button class="icon-btn" title="Mark as replied" data-replied="${r.mailId}">✓</button>`:""}</article>`;
 }
+
+function internshipCard(item) {
+  const safeUrl = value => {
+    try { const u = new URL(value); return ["http:","https:"].includes(u.protocol) ? u.href : ""; } catch { return ""; }
+  };
+  const website = safeUrl(item.website), vacancy = safeUrl(item.link);
+  return `<article class="internship-card">
+    <div class="internship-card-top"><div><h3>${escapeHTML(item.title)}</h3><p class="internship-company">${escapeHTML(item.company)}</p></div>
+    <button class="favourite-btn" data-favourite="${item.id}" title="${item.favourite?"Remove from favourites":"Add to favourites"}">${item.favourite?"♥":"♡"}</button></div>
+    <div class="internship-meta">${item.location?`<span>⌖ ${escapeHTML(item.location)}</span>`:""}${item.field?`<span>${escapeHTML(item.field)}</span>`:""}</div>
+    ${item.details?`<p class="internship-details">${escapeHTML(item.details)}</p>`:""}
+    <div class="internship-contact">${item.email?`<span>✉ ${escapeHTML(item.email)}</span>`:""}${website?`<a href="${escapeHTML(website)}" target="_blank" rel="noopener">Company website ↗</a>`:""}${vacancy?`<a href="${escapeHTML(vacancy)}" target="_blank" rel="noopener">View vacancy ↗</a>`:""}</div>
+    <div class="internship-card-actions"><button class="secondary-btn" data-track-internship="${item.id}">Track application</button><button class="secondary-btn" data-edit-internship="${item.id}">Edit</button><button class="text-btn" data-delete-internship="${item.id}">Delete</button></div>
+  </article>`;
+}
+function renderInternships() {
+  const input = $("internshipSearch");
+  if (!input) return;
+  const query = input.value.trim().toLowerCase();
+  const list = savedInternships.filter(item => (internshipFilter==="All" || item.favourite) &&
+    [item.title,item.company,item.location,item.field,item.details].join(" ").toLowerCase().includes(query));
+  $("internshipList").innerHTML = list.length ? list.map(internshipCard).join("") : empty(
+    internshipFilter==="Favourites" ? "No favourites yet" : "No saved internships yet",
+    "Save an opportunity you find online to keep its company details here."
+  );
+}
+function openInternship(item=null) {
+  $("internshipForm").reset();
+  $("internshipEditId").value = item?.id || "";
+  $("internshipFormTitle").textContent = item ? "Edit internship" : "Save an internship";
+  $("internshipTitle").value = item?.title || "";
+  $("internshipCompany").value = item?.company || "";
+  $("internshipLocation").value = item?.location || "";
+  $("internshipField").value = item?.field || "";
+  $("internshipEmail").value = item?.email || "";
+  $("internshipWebsite").value = item?.website || "";
+  $("internshipLink").value = item?.link || "";
+  $("internshipDetails").value = item?.details || "";
+  $("internshipDialog").showModal();
+}
+function saveInternships() {
+  localStorage.setItem(INTERNSHIP_KEY, JSON.stringify(savedInternships));
+  renderInternships();
+}
+
 function render() {
   const reminders=getReminders();
   $("totalCount").textContent=applications.length;
@@ -55,12 +103,13 @@ function render() {
   const filtered=applications.filter(a=>(activeFilter==="All"||a.status===activeFilter)&&a.company.toLowerCase().includes(query)).sort((a,b)=>b.dateApplied.localeCompare(a.dateApplied));
   $("allApplications").innerHTML=filtered.length?filtered.map(appCard).join(""):empty("No applications found","Try another filter or add an application.");
   $("allReminders").innerHTML=reminders.length?reminders.map(reminderCard).join(""):empty("Nothing to remind you about","We'll show a reminder here when it's time.");
+  renderInternships();
   $("emailCompany").innerHTML=applications.length?applications.map(a=>`<option value="${a.id}">${escapeHTML(a.company)}</option>`).join(""):"<option value=''>Add an application first</option>";
 }
 function showView(view) {
-  ["dashboard","applications","cv","reminders"].forEach(v=>$(`${v}View`).classList.toggle("hidden",v!==view));
+  ["dashboard","applications","cv","reminders","internships"].forEach(v=>$(`${v}View`).classList.toggle("hidden",v!==view));
   document.querySelectorAll(".nav-link").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
-  $("pageTitle").textContent=view==="dashboard"?"Dashboard":view==="applications"?"Applications":view==="cv"?"My CV":"Reminders";
+  $("pageTitle").textContent=view==="dashboard"?"Dashboard":view==="applications"?"Applications":view==="cv"?"My CV":view==="internships"?"Find internships":"Reminders";
 }
 function openApplication(app=null) {
   $("applicationForm").reset(); $("editId").value=app?.id||"";
@@ -128,6 +177,52 @@ $("printCv").addEventListener("click", () => {
   const w = window.open("", "_blank"); if (!w) { alert("Please allow pop-ups to print your CV."); return; }
   w.document.write(`<!doctype html><html><head><title>My CV</title><style>body{font:14px Arial,sans-serif;line-height:1.55;white-space:pre-wrap;color:#222;max-width:800px;margin:45px auto;padding:0 25px}@media print{body{margin:15mm auto}}</style></head><body>${escapeHTML(cvText.value).replace(/\n/g,"<br>")}</body></html>`);
   w.document.close(); w.focus(); w.print();
+});
+
+
+// Internship search, saved opportunities and favourites.
+$("addInternshipButton").addEventListener("click",()=>openInternship());
+$("closeInternshipDialog").onclick=$("cancelInternshipDialog").onclick=()=>$("internshipDialog").close();
+$("internshipForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const id=$("internshipEditId").value || String(Date.now());
+  const old=savedInternships.find(x=>x.id===id);
+  const item={id,title:$("internshipTitle").value.trim(),company:$("internshipCompany").value.trim(),
+    location:$("internshipLocation").value.trim(),field:$("internshipField").value.trim(),
+    email:$("internshipEmail").value.trim(),website:$("internshipWebsite").value.trim(),
+    link:$("internshipLink").value.trim(),details:$("internshipDetails").value.trim(),favourite:old?.favourite||false};
+  const index=savedInternships.findIndex(x=>x.id===id);
+  if(index>=0)savedInternships[index]=item;else savedInternships.unshift(item);
+  $("internshipDialog").close();saveInternships();
+});
+$("internshipSearch").addEventListener("input",renderInternships);
+$("internshipTabs").addEventListener("click",e=>{
+  const b=e.target.closest("[data-internship-filter]");if(!b)return;
+  internshipFilter=b.dataset.internshipFilter;
+  document.querySelectorAll("[data-internship-filter]").forEach(t=>t.classList.toggle("active",t===b));
+  renderInternships();
+});
+$("onlineInternshipSearch").addEventListener("click",()=>{
+  const q=$("internshipSearch").value.trim();
+  const search=new URL("https://www.google.com/search");
+  search.searchParams.set("q",`stage internship ${q}`.trim());
+  window.open(search.href,"_blank","noopener");
+});
+document.addEventListener("click",e=>{
+  const fav=e.target.closest("[data-favourite]");
+  if(fav){const item=savedInternships.find(x=>x.id===fav.dataset.favourite);if(item){item.favourite=!item.favourite;saveInternships();}}
+  const edit=e.target.closest("[data-edit-internship]");
+  if(edit){const item=savedInternships.find(x=>x.id===edit.dataset.editInternship);if(item)openInternship(item);}
+  const del=e.target.closest("[data-delete-internship]");
+  if(del){const item=savedInternships.find(x=>x.id===del.dataset.deleteInternship);if(item&&confirm(`Delete ${item.title} at ${item.company}?`)){savedInternships=savedInternships.filter(x=>x.id!==item.id);saveInternships();}}
+  const track=e.target.closest("[data-track-internship]");
+  if(track){
+    const item=savedInternships.find(x=>x.id===track.dataset.trackInternship);
+    if(item){
+      applications.push({id:String(Date.now()),company:item.company,dateApplied:todayISO(),status:"Waiting",email:item.email||"",notes:`Internship: ${item.title}${item.link?" · "+item.link:""}`});
+      save();showView("applications");
+    }
+  }
 });
 
 render();
