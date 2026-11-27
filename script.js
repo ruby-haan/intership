@@ -204,7 +204,7 @@ $("internshipTabs").addEventListener("click",e=>{
 });
 $("onlineInternshipSearch").addEventListener("click",()=>{
   const q=$("internshipSearch").value.trim();
-  const search=new URL("https://www.google.com/search");
+  const search=new URL("https://nl.indeed.com/?from=gnav-util-homepage");
   search.searchParams.set("q",`stage internship ${q}`.trim());
   window.open(search.href,"_blank","noopener");
 });
